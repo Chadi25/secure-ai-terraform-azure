@@ -1,0 +1,37 @@
+# Configuration Checkov. Chaque exception est justifiée : un écart de sécurité
+# n'est acceptable que s'il est documenté, borné (démo éphémère) et réversible.
+# NB : identifiants de règles à confirmer au premier passage réel de Checkov
+# (non exécuté dans l'environnement où ce dépôt a été écrit).
+framework:
+  - terraform
+directory:
+  - infra
+download-external-modules: false
+compact: true
+soft-fail: false
+
+skip-check:
+  # --- ACR en SKU Basic (démo à faible coût) ---
+  # Accès public non désactivable en Basic ; compensé par admin désactivé,
+  # pull anonyme désactivé et authentification Entra ID obligatoire.
+  # Passer acr_sku = "Premium" active le point de terminaison privé et lève l'écart.
+  - CKV_AZURE_139  # ACR : accès réseau public désactivé
+  - CKV_AZURE_165  # ACR : géo-réplication (Premium)
+  - CKV_AZURE_166  # ACR : quarantaine des images (Premium)
+  - CKV_AZURE_167  # ACR : rétention des manifestes non tagués (Premium)
+  - CKV_AZURE_164  # ACR : images signées / content trust (Premium)
+  - CKV_AZURE_233  # ACR : redondance de zone (Premium)
+  - CKV_AZURE_237  # ACR : points de terminaison de données dédiés (Premium)
+  # Scan de vulnérabilités Defender for Containers : payant ; remplacé par Trivy en CI.
+  - CKV_AZURE_163
+
+  # --- Chiffrement par clé gérée par le client (CMK) ---
+  # Chiffrement au repos par clés gérées par Microsoft jugé suffisant pour une démo
+  # sans donnée personnelle ; la CMK imposerait un HSM / une gestion de rotation.
+  - CKV2_AZURE_22  # Cognitive Services : CMK
+
+  # --- Prévention de fuite de données Azure OpenAI ---
+  # La ressource a outbound_network_access_restricted = true avec une liste fqdns VIDE :
+  # aucune sortie n'est autorisée, ce qui est plus strict que ce que la règle attend
+  # (elle exige au moins un FQDN autorisé). Exception volontaire, vérifiée au premier passage réel.
+  - CKV_AZURE_247

@@ -1,0 +1,58 @@
+name: app
+
+# Tests de l'application, construction de l'image, scan de vulnérabilités,
+# puis (sur main) push vers l'ACR avec OIDC + rôle AcrPush (pas d'admin ACR).
+on:
+  pull_request:
+    paths: ["app/**", ".github/workflows/app.yml"]
+  push:
+    branches: [main]
+    paths: ["app/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  test-build-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: tests
+        working-directory: app
+        run: |
+          pip install -r requirements.txt pytest
+          python -m pytest -q tests
+      - name: build
+        run: docker build -t ragapp:${{ github.sha }} app
+      - name: trivy (image)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ragapp:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+
+  push:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test-build-scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: build & push
+        env:
+          ACR: ${{ vars.ACR_NAME }}
+        run: |
+          az acr login --name "$ACR"
+          docker build -t "$ACR.azurecr.io/ragapp:${GITHUB_SHA::7}" app
+          docker push "$ACR.azurecr.io/ragapp:${GITHUB_SHA::7}"

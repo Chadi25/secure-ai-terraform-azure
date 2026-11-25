@@ -1,0 +1,20 @@
+# Copier en terraform.tfvars (ignoré par git). Ne JAMAIS y mettre de secret.
+project     = "secai"
+environment = "demo"
+location    = "francecentral"
+owner       = "prenom.nom"
+
+# Votre IP publique en /32 (curl ifconfig.me) — liste blanche d'accès à l'app.
+allowed_ingress_cidrs = ["203.0.113.10/32"]
+
+budget_amount         = 20
+budget_start_date     = "2026-12-01T00:00:00Z"
+budget_contact_emails = ["vous@example.com"]
+
+# Nom de l'ACR connu après l'étape d'amorçage (output acr_login_server).
+container_image = "acrsecaixxxxx.azurecr.io/ragapp:0.1.0"
+
+# Après dépôt du secret dans Key Vault (docs/deploiement.md, étape 4) :
+# app_secret_names = ["app-api-key"]
+
+enable_azure_openai = false

@@ -1,0 +1,7 @@
+variable "name" { type = string }
+variable "location" { type = string }
+variable "resource_group_name" { type = string }
+variable "vnet_cidr" { type = string }
+variable "allowed_ingress_cidrs" { type = list(string) }
+variable "log_analytics_workspace_id" { type = string }
+variable "tags" { type = map(string) }

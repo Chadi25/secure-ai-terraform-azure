@@ -1,0 +1,47 @@
+name: destroy
+
+# Destruction manuelle après la démo. Double garde-fou :
+#  1. saisie obligatoire du mot « DETRUIRE » ;
+#  2. environnement GitHub « demo » avec approbation requise.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Taper DETRUIRE pour confirmer"
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+  ARM_USE_OIDC: "true"
+  ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  TF_VAR_owner: ${{ vars.TF_OWNER }}
+  TF_VAR_allowed_ingress_cidrs: ${{ vars.TF_ALLOWED_INGRESS_CIDRS }}
+  TF_VAR_budget_contact_emails: ${{ vars.TF_BUDGET_EMAILS }}
+  TF_VAR_container_image: ${{ vars.TF_CONTAINER_IMAGE }}
+
+jobs:
+  destroy:
+    if: github.event.inputs.confirm == 'DETRUIRE'
+    runs-on: ubuntu-latest
+    environment: demo
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+      - run: terraform init
+      - run: terraform destroy -lock-timeout=5m -auto-approve
+      - name: rappel
+        run: |
+          echo "Key Vault conservé en suppression réversible (purge protection) : c'est attendu."
+          echo "Vérifier qu'il ne reste rien : az group list --tag project=secai -o table"

@@ -1,0 +1,9 @@
+variable "name" { type = string }
+variable "location" { type = string }
+variable "resource_group_name" { type = string }
+variable "resource_group_id" { type = string }
+variable "retention_days" { type = number }
+variable "budget_amount" { type = number }
+variable "budget_start_date" { type = string }
+variable "budget_contact_emails" { type = list(string) }
+variable "tags" { type = map(string) }
