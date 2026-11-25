@@ -30,10 +30,12 @@ env:
   ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
   ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
   ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-  TF_VAR_owner: ${{ vars.TF_OWNER }}
-  TF_VAR_allowed_ingress_cidrs: ${{ vars.TF_ALLOWED_INGRESS_CIDRS }} # ex. ["203.0.113.10/32"]
-  TF_VAR_budget_contact_emails: ${{ vars.TF_BUDGET_EMAILS }}         # ex. ["vous@example.com"]
-  TF_VAR_container_image: ${{ vars.TF_CONTAINER_IMAGE }}
+  # Valeurs de repli (adresses de documentation) : seulement pour fmt/validate/tflint tant que
+  # les variables de dépôt ne sont pas définies ; les jobs plan/apply sont ignorés dans ce cas.
+  TF_VAR_owner: ${{ vars.TF_OWNER || 'ci-lint' }}
+  TF_VAR_allowed_ingress_cidrs: ${{ vars.TF_ALLOWED_INGRESS_CIDRS || '["203.0.113.10/32"]' }} # ex. ["203.0.113.10/32"]
+  TF_VAR_budget_contact_emails: ${{ vars.TF_BUDGET_EMAILS || '["ci@example.com"]' }}         # ex. ["vous@example.com"]
+  TF_VAR_container_image: ${{ vars.TF_CONTAINER_IMAGE || 'mcr.microsoft.com/k8se/quickstart:latest' }}
 
 jobs:
   static:
