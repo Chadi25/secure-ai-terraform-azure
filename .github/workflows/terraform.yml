@@ -61,8 +61,8 @@ jobs:
       - name: tflint
         run: |
           tflint --init --config "$GITHUB_WORKSPACE/.tflint.hcl"
-          # call_module_type = "local" : les modules sont inspectés depuis la racine
-          tflint --chdir=infra --config "$GITHUB_WORKSPACE/.tflint.hcl"
+          # déjà dans infra/ (working-directory) ; call_module_type = "local" : modules inspectés depuis la racine
+          tflint --config "$GITHUB_WORKSPACE/.tflint.hcl"
 
       - name: checkov
         uses: bridgecrewio/checkov-action@v12
