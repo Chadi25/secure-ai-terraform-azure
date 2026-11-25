@@ -7,7 +7,8 @@ on:
     paths: ["app/**", ".github/workflows/app.yml"]
   push:
     branches: [main]
-    paths: ["app/**"]
+    paths: ["app/**", ".github/workflows/app.yml"]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -36,7 +37,8 @@ jobs:
           exit-code: "1"
 
   push:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Ignoré tant qu'Azure n'est pas configuré (variable de dépôt AZURE_CLIENT_ID)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.AZURE_CLIENT_ID != ''
     needs: test-build-scan
     runs-on: ubuntu-latest
     permissions:

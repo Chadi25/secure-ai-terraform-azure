@@ -12,7 +12,8 @@ on:
     paths: ["infra/**", "policy_check/**", ".checkov.yaml", ".github/workflows/terraform.yml"]
   push:
     branches: [main]
-    paths: ["infra/**"]
+    paths: ["infra/**", "policy_check/**", ".checkov.yaml", ".github/workflows/terraform.yml"]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -87,7 +88,8 @@ jobs:
 
   plan:
     name: plan (PR)
-    if: github.event_name == 'pull_request'
+    # Ignoré tant qu'Azure n'est pas configuré (variable de dépôt AZURE_CLIENT_ID, voir docs/)
+    if: github.event_name == 'pull_request' && vars.AZURE_CLIENT_ID != ''
     needs: static
     runs-on: ubuntu-latest
     permissions:
@@ -121,7 +123,8 @@ jobs:
 
   apply:
     name: apply (main, approbation manuelle)
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Ignoré tant qu'Azure n'est pas configuré ; protéger l'environnement « demo » par une approbation manuelle
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.AZURE_CLIENT_ID != ''
     needs: static
     runs-on: ubuntu-latest
     environment: demo
